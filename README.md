@@ -2,6 +2,8 @@
 
 A WordPress plugin that turns your site into a brand pack AI agents read before they write, design or review anything for you. Voice, visual identity, rules and facts in one file, kept in sync with your site.
 
+**[Try it in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/jamiemarsland/brand-pack/main/blueprint.json)** (loads a fictional bakery as demo content)
+
 ## What agents get
 
 - `/brand.md` and `/.well-known/brand.json`

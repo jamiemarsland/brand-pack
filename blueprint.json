@@ -1,0 +1,44 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Brand Pack demo",
+    "description": "Brand Pack with a fictional bakery's content, ready to test.",
+    "author": "jamiemarsland"
+  },
+  "landingPage": "/wp-admin/admin.php?page=brand-pack",
+  "preferredVersions": {
+    "php": "8.3",
+    "wp": "latest"
+  },
+  "steps": [
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "permalink_structure": "/%postname%/"
+      }
+    },
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "git:directory",
+        "url": "https://github.com/jamiemarsland/brand-pack",
+        "ref": "main",
+        "refType": "branch",
+        "path": "/"
+      },
+      "options": {
+        "activate": true,
+        "targetFolderName": "brand-pack"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php\nrequire '/wordpress/wp-load.php';\nforeach (['taxonomy','file','media','image'] as $inc) { require_once ABSPATH . \"wp-admin/includes/$inc.php\"; }\n\nupdate_option('blogname', 'Crumb & Co');\nupdate_option('blogdescription', 'Slow bread for fast mornings');\n\nwp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>'About','post_name'=>'about','post_content'=>'<!-- wp:paragraph --><p>Crumb &amp; Co started in a shared kitchen in Leeds in 2019 with one sourdough starter called Dennis. We bake small batches overnight, deliver before 7am, and never use improvers or preservatives. Our flour comes from two mills within sixty miles. We think good bread should be an everyday thing, not a treat.</p><!-- /wp:paragraph -->']);\nwp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>'Subscribe','post_content'=>'<!-- wp:paragraph --><p>Weekly bread, on your doorstep before 7am.</p><!-- /wp:paragraph -->']);\n\n$cats = [];\nforeach (['Sourdough','Baking tips','Behind the scenes'] as $c) { $cats[$c] = wp_create_category($c); }\n$posts = [\n ['Why our sourdough takes 36 hours','Sourdough','Most supermarket loaves go from flour to shelf in about three hours. Ours takes thirty-six. That is not us being precious. Long fermentation lets the wild yeast and bacteria break down more of the gluten and starch, which is why a lot of people who struggle with bread find ours easier going. It also gives the crust that deep, slightly sour crackle. We mix on Tuesday morning, shape on Wednesday, and bake through the night. Then it is in your bread bin by breakfast.'],\n ['Stop putting your bread in the fridge','Baking tips','Here is the single most useful thing we can tell you: the fridge is where bread goes to die. Cold temperatures speed up staling, so a loaf that would have been fine on day three tastes like cardboard on day two. Keep it cut side down on a board, or in a cloth bag. If you will not finish it in three days, slice it and freeze it. Toast straight from frozen. Honestly, it is better than fresh.'],\n ['Meet Dennis, the starter who runs the place','Behind the scenes','Dennis is five years old, lives in a glass jar on the second shelf, and has never had a day off. He eats rye flour and water twice a day and in return he raises every loaf we sell. People ask if they can buy some of him. You can, actually. We sell little pots of Dennis on Saturdays, with a card telling you how to keep him alive. Most people manage it.'],\n ['What a 4am bake actually looks like','Behind the scenes','The alarm goes at half three. By four the ovens are hot and the first trays of baguettes go in. It is quiet, warm and smells ridiculous. We bake in order of delivery route, furthest first, so the van can leave at six with everything still warm. It is not glamorous, but we would not swap it.'],\n];\nforeach ($posts as $i => [$t,$c,$body]) {\n  wp_insert_post(['post_status'=>'publish','post_title'=>$t,'post_content'=>\"<!-- wp:paragraph --><p>$body</p><!-- /wp:paragraph -->\",'post_category'=>[$cats[$c]],'post_date'=>date('Y-m-d H:i:s', strtotime('-'.($i*6).' days'))]);\n}\n\nif (function_exists('imagecreatetruecolor')) {\n  $upload = wp_upload_dir();\n  $path = $upload['path'].'/crumb-logo.png';\n  $im = imagecreatetruecolor(400, 120);\n  imagefill($im, 0, 0, imagecolorallocate($im, 17, 17, 17));\n  imagefilledellipse($im, 60, 60, 72, 72, imagecolorallocate($im, 255, 238, 88));\n  imagestring($im, 5, 120, 52, 'Crumb & Co', imagecolorallocate($im, 255, 255, 255));\n  imagepng($im, $path);\n  $id = wp_insert_attachment(['post_mime_type'=>'image/png','post_title'=>'Crumb & Co logo','post_status'=>'inherit'], $path);\n  wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $path));\n  update_option('site_logo', $id);\n}\n\n$o = array_merge(Brand_Pack::options(), [\n 'positioning'=>'Slow-fermented bread baked overnight and delivered across Leeds before 7am, by subscription.',\n 'audience'=>'Busy people in Leeds who care what they eat but have no time to bake. They know good bread when they taste it but are not food snobs.',\n 'voice'=>['Warm and direct, never gushing','Plain English, short sentences','Dry humour, never jokey','Confident about bread, humble about ourselves'],\n 'say'=>['Dennis (our starter)','loaf','bake','the van'],\n 'avoid'=>['artisanal','crafted','elevate','indulge','game-changer'],\n 'claims'=>['Never say our bread is gluten-free or safe for coeliacs','Never make health claims beyond \"easier to digest for some people\"'],\n 'competitors'=>['Big Bread Ltd','Loaf Express'],\n 'disclaimers'=>'Every product: \"Made in a kitchen that handles nuts, sesame and seeds.\"',\n 'ctas'=>['Start a bread subscription | https://crumbandco.example/subscribe','Find us on Saturday | https://crumbandco.example/market'],\n 'examples'=>[['bad'=>'Indulge in our artisanal, lovingly crafted sourdough!','good'=>'Our sourdough takes 36 hours. You will taste why.','why'=>'Say what we do, not how we feel about it.']],\n]);\nupdate_option('brand_pack', $o, false);\nBrand_Pack::mark_dirty();\nflush_rewrite_rules();\n"
+    }
+  ]
+}
